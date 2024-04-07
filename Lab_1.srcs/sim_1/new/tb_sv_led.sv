@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module tb_sv_led#(
-    parameter CLK_FREQUENCY = 200.0e6,
+    parameter CLK_FREQUENCY = 33.3e6,
     parameter BLINK_PERIOD = 100e-6
 );
 //-- Constants

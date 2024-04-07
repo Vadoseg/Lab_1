@@ -21,8 +21,8 @@
 
 
 module sv_led#(
-    parameter CLK_FREQUENCY = 200.0e6, // Hz
-    parameter BLINK_PERIOD = 1.0 // Seconds
+    parameter CLK_FREQUENCY = 33.3e6, // Hz
+    parameter BLINK_PERIOD = 100e-6 // microseconds
 )
 (
     input i_clk,
