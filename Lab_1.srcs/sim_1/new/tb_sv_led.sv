@@ -20,8 +20,8 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module tb_sv_led#(
-    parameter CLK_FREQUENCY = 33.3e6,
-    parameter BLINK_PERIOD = 100e-6
+    parameter CLK_FREQUENCY = 200.0e6,
+    parameter BLINK_PERIOD = 1.0
 );
 //-- Constants
     localparam T_CLK = int'(1.0e9 / CLK_FREQUENCY); // ns
@@ -33,7 +33,7 @@ module tb_sv_led#(
         .BLINK_PERIOD (BLINK_PERIOD)
    ) 
     UUT_2 (
-        .i_clk (i_clk ),
+        .i_clk (i_clk),
         .i_rst(i_rst),
         .o_led ()
     );
@@ -41,7 +41,7 @@ module tb_sv_led#(
     always #(T_CLK/2) i_clk = ~i_clk;
     initial begin
     i_rst = 1'b0;
-    #10e3 i_rst = 1'b0;
+    #10e3 i_rst = 1'b1;
     #(20*T_CLK) i_rst = 1'b0;
     end
 endmodule
