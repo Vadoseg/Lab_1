@@ -91,7 +91,6 @@ module Led_top(
       .I(clk_out1)  // 1-bit input: Clock input
    );
     
-    
     sv_led LED (
         .i_clk(i_clk),
         .i_rst(i_rst),
