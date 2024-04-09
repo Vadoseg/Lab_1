@@ -16,7 +16,7 @@
 **/*.tmp
 **/*.ui
 **/*(**)*
-!**/*.bit
+!/Lab_1.runs/impl_1/*.bit
 # file formats that might be tracked in some cases but mostly not
 **/*.ampl
 /**/*.dcp
