@@ -21,10 +21,10 @@
 
 module tb_sv_led#(
     parameter CLK_FREQUENCY = 200.0e6,
-    parameter BLINK_PERIOD = 1.0
+    parameter BLINK_PERIOD = 1.0e-6
 );
 //-- Constants
-    localparam T_CLK = int'(1.0e9 / CLK_FREQUENCY); // ns
+    localparam T_CLK = 1.0e9 / CLK_FREQUENCY; // ns
 //-- Signals
     bit i_clk = 1'b0; bit i_rst = 1'b1;
 //-- 

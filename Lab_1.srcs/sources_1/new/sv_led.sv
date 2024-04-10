@@ -25,8 +25,8 @@ module sv_led#(
 )
 (
     input i_clk,
-    input i_rst,
-    output logic [3:0] o_led
+    (* MARK_DEBUG="true" *)input i_rst,
+    (* MARK_DEBUG="true" *)output logic [3:0] o_led
 );
 
 //Constants
@@ -35,8 +35,8 @@ module sv_led#(
     localparam COUNTER_WIDTH  = int'($ceil($clog2(COUNTER_PERIOD+1)));
     
 //Counter & Comparator
-    reg [COUNTER_WIDTH -1 : 0] counter_value ='0;
-    logic led_on;
+    (* MARK_DEBUG="true" *)reg [COUNTER_WIDTH -1 : 0] counter_value ='0;
+    (* MARK_DEBUG="true" *)logic led_on;
     
     always_ff@(posedge i_clk)begin
         if(i_rst || counter_value == COUNTER_PERIOD-1)
