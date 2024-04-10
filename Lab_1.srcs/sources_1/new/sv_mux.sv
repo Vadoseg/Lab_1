@@ -27,7 +27,7 @@ module sv_mux
     output bit /*[3:0]*/ o_func // Signal will be seen on LED's
     );
     
-    always_ff@(posedge i_selector[1:0] or negedge i_selector[1:0])begin
+    /*always_ff@(posedge i_selector[1:0] or negedge i_selector[1:0])begin
         i_signal[3:0] <= '0;
         if(i_selector[1:0] == 2'b00)
         begin
@@ -47,8 +47,10 @@ module sv_mux
         if(i_selector[1:0] == 2'b11) begin
             i_signal[3] <= '1;
         end
-    end;
+    end;*/
     
     
-    assign o_func = i_signal[3:0]; //?
+    always_comb 
+        o_func = i_signal[i_selector];
+        
 endmodule
