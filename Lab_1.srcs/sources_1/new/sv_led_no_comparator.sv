@@ -33,7 +33,7 @@ module sv_led_no_comparator#(
 //Constants
     localparam COUNTER_PERIOD = int'(BLINK_PERIOD * CLK_FREQUENCY);
     
-    localparam COUNTER_WIDTH  = int'($ceil($clog2(COUNTER_PERIOD+1)));
+    localparam COUNTER_WIDTH  = int'($ceil($clog2(COUNTER_PERIOD)+1));
     
 //Counter & Comparator
     reg [COUNTER_WIDTH -1 : 0] counter_value ='0;
