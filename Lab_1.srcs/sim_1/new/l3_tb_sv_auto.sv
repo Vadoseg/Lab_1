@@ -43,7 +43,7 @@ module l3_tb_sv_auto#(
     );
     
     always#(BLINK) i_clk = ~i_clk;
-    always#(BLINK*20) i_Sensor[0] = ~i_Sensor[0];
-    always#(BLINK*50) i_Sensor[1] = ~i_Sensor[1];
+    always#(BLINK*31) i_Sensor[0] = ~i_Sensor[0];
+    always#(BLINK*55) i_Sensor[1] = ~i_Sensor[1];
     
 endmodule
