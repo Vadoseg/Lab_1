@@ -26,19 +26,19 @@ module l3_sv_auto#(
         parameter G_WID = 2  // Number of Lights
     )
     (
-    input [G_NUM-1:0] i_Sensor,
-    output bit [G_WID-1:0] o_Light1,
-    output bit [G_WID-1:0] o_Light2,
-    input i_clk,
-    input i_rst
+        input [G_NUM-1:0] i_Sensor,
+        output bit [G_WID-1:0] o_Light1,
+        output bit [G_WID-1:0] o_Light2,
+        input i_clk,
+        input i_rst
     );
     
     
     typedef enum {
         S0 = 0,
-        S1  = 1,
+        S1 = 1,
         S2 = 2,
-        S3  = 3
+        S3 = 3
 } t_fsm_states;
     
     t_fsm_states w_next_state, q_crnt_state = S0;
@@ -68,7 +68,7 @@ module l3_sv_auto#(
                 w_next_state = S0;
            default:
                 w_next_state = S0;
-           endcase;
+        endcase;
     end
     
     always_ff@(posedge i_clk) begin
@@ -83,7 +83,8 @@ module l3_sv_auto#(
     always_ff@(posedge i_clk) begin
         
         case (q_crnt_state)
-            S1, S3: q_cnt <= '0;
+            S1, S3: 
+                q_cnt <= '0;
             default:
                 if (q_cnt < C_MAX-1)
                     q_cnt <= q_cnt + 1;
