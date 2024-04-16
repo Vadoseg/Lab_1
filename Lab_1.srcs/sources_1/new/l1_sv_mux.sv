@@ -20,13 +20,17 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module sv_mux
+module sv_mux#(
+    parameter G_SIG_WIDTH = 4, // Bus input i_selector
+    parameter G_SEL_WIDTH = int'($ceil($clog2(G_SIG_WIDTH)))
+)
 (
-    input bit [1:0] i_selector, // We can make it with one selector, but use integer(or similar)
-    input bit [3:0] i_signal,
-    output bit /*[3:0]*/ o_func // Signal will be seen on LED's
+    input bit [G_SEL_WIDTH-1:0] i_selector, // We can make it with one selector, but use integer(or similar)
+    input bit [G_SIG_WIDTH-1:0] i_signal,
+    output bit o_func // Signal will be seen on LED's
     );
     
+    //localparam COUNTER_WIDTH  = int'($ceil($clog2(COUNTER_PERIOD+1)));
     /*always_ff@(posedge i_selector[1:0] or negedge i_selector[1:0])begin
         i_signal[3:0] <= '0;
         if(i_selector[1:0] == 2'b00)

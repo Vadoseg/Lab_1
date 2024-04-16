@@ -26,9 +26,9 @@ module l3_sv_auto#(
         parameter G_WID = 2  // Number of Lights
     )
     (
-        input [G_NUM-1:0] i_Sensor,
-        output bit [G_WID-1:0] o_Light1,
-        output bit [G_WID-1:0] o_Light2,
+        input [G_NUM-1:0] i_sensor,
+        output bit [G_WID-1:0] o_light1,
+        output bit [G_WID-1:0] o_light2,
         input i_clk,
         input i_rst
     );
@@ -55,15 +55,15 @@ module l3_sv_auto#(
         
         case(q_crnt_state)
            S0: 
-                if (q_cnt >= C_MAX-1 && i_Sensor[1]) w_next_state = S1; // Change of state
+                if (q_cnt >= C_MAX-1 && i_sensor[1]) w_next_state = S1; // Change of state
                 else w_next_state = S0;
            S1:
                 w_next_state = S2;
            S2:
-                if(q_cnt >= C_MAX-1 && i_Sensor[0])
+                if(q_cnt >= C_MAX-1 && i_sensor[0])
                     w_next_state = S3;
                 else
-                    w_next_state = S2; // Equal to w_next_state = (q_cnt >= C_MAX-1 && i_Sensor[0]) ? S3 : S2;  
+                    w_next_state = S2; // Equal to w_next_state = (q_cnt >= C_MAX-1 && i_sensor[0]) ? S3 : S2;  
            S3:
                 w_next_state = S0;
            default:
@@ -96,23 +96,23 @@ module l3_sv_auto#(
        case(q_crnt_state)
             S0:
                 begin
-                    o_Light1 = 2'b00; // Green
-                    o_Light2 = 2'b10; // Red
+                    o_light1 = 2'b00; // Green
+                    o_light2 = 2'b10; // Red
                 end
             S2:
                 begin
-                    o_Light1 = 2'b10; // Red
-                    o_Light2 = 2'b00; // Green
+                    o_light1 = 2'b10; // Red
+                    o_light2 = 2'b00; // Green
                 end
             S1,S3:
                 begin
-                    o_Light2 = 2'b01; //Yellow
-                    o_Light1 = 2'b01; //Yellow
+                    o_light2 = 2'b01; //Yellow
+                    o_light1 = 2'b01; //Yellow
                 end
             default:
                 begin
-                    o_Light1 = 2'b00; // Green
-                    o_Light2 = 2'b10; // Red
+                    o_light1 = 2'b00; // Green
+                    o_light2 = 2'b10; // Red
                 end
        endcase;
     end

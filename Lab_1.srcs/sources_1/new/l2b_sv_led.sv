@@ -19,7 +19,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module sv_led#(
+module l2b_sv_led#(
     parameter CLK_FREQUENCY = 200.0e6, // Hz
     parameter BLINK_PERIOD  = 1.0, // Seconds
     parameter G_CNT_LEDS    = 4,
@@ -27,8 +27,8 @@ module sv_led#(
 )
 (
     input i_clk,
-    /*(* MARK_DEBUG="true" *)*/input i_rst,
-    /*(* MARK_DEBUG="true" *)*/output logic [G_LED_WIDTH-1:0] o_led
+    input i_rst,
+    output logic [G_LED_WIDTH-1:0] o_led
 );
 
 //Constants
@@ -37,8 +37,8 @@ module sv_led#(
     localparam COUNTER_WIDTH  = int'($ceil($clog2(COUNTER_PERIOD+1)));
     
 //Counter & Comparator
-    /*(* MARK_DEBUG="true" *)*/reg [COUNTER_WIDTH -1 : 0] counter_value ='0;
-    /*(* MARK_DEBUG="true" *)*/logic led_on;
+    reg [COUNTER_WIDTH -1 : 0] counter_value ='0;
+    logic led_on;
     
     always_ff@(posedge i_clk)begin
         if(i_rst || counter_value == COUNTER_PERIOD-1)
@@ -59,8 +59,13 @@ module sv_led#(
         else begin
             led_on <= 1;
         end;
-        o_led[G_LED_WIDTH-1:1]<={$size(o_led[G_LED_WIDTH-1:1]){led_on}}; // 3 wires will be equal to led_on, except first
-        o_led[0]<=!led_on;
+        if (G_LED_WIDTH > 1) begin
+            o_led[G_LED_WIDTH-1:1]<={$size(o_led[G_LED_WIDTH-1:1]){led_on}}; // 3 wires will be equal to led_on, except first
+            o_led[0]<=!led_on;
+        end
+        else begin
+            o_led[0]<=led_on;
+        end;
     end
     
     

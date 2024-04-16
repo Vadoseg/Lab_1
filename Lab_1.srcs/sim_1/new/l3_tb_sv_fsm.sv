@@ -30,7 +30,7 @@ module l3_tb_sv_auto#(
     
     bit i_clk = '0; 
     bit i_rst = '0; // Use Later
-    bit [G_NUM-1:0] i_Sensor = '0;
+    bit [G_NUM-1:0] i_sensor = '0;
     
     l3_sv_auto#(
         .G_NUM(G_NUM),
@@ -39,11 +39,11 @@ module l3_tb_sv_auto#(
     UUT(
         .i_clk(i_clk),
         .i_rst(i_rst),
-        .i_Sensor(i_Sensor)
+        .i_sensor(i_sensor)
     );
     
     always#(BLINK) i_clk = ~i_clk;
-    always#(BLINK*31) i_Sensor[0] = ~i_Sensor[0];
-    always#(BLINK*55) i_Sensor[1] = ~i_Sensor[1];
+    always#(BLINK*31) i_sensor[0] = ~i_sensor[0];
+    always#(BLINK*55) i_sensor[1] = ~i_sensor[1];
     
 endmodule
