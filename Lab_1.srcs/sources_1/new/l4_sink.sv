@@ -28,7 +28,9 @@ module l4_sink(
     
     input sink_tvalid,
     input sink_tdata,
-    input sink_tlast
+    input sink_tlast,
+    
+    output sink_data
     );
     
 endmodule
