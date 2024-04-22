@@ -40,10 +40,9 @@ module l4_top#(
     input i_clk,
 
 // Inputs for CRC in Source
-    input crc_s_ready,
-    input crc_s_valid,
-    input [G_BIT_WIDTH-1:0] crc_s_data,
-
+/*    input crc_s_valid,
+    input [G_BIT_WIDTH-1:0] crc_s_data,*/
+    
 // Output from Sink    
     output o_top_error,
     output o_top_good
@@ -57,16 +56,14 @@ module l4_top#(
         .G_BYT       (G_BYT      ),
         .G_BIT_WIDTH (G_BIT_WIDTH)
     ) SOURCE (
-        .i_reset    (i_rst_src),
+        .i_rst      (i_rst_src),
         .i_clk      (i_clk    ),
         
-        .src_tvalid (src_fifo_tvalid),
-        .src_tdata  (src_fifo_tdata ),
-        .src_tlast  (src_fifo_tlast ), // WHERE TO CONNECT ????
+        .o_src_tvalid (src_fifo_tvalid),
+        .o_src_tdata  (src_fifo_tdata ),
+        .o_src_tlast  (src_fifo_tlast ), // WHERE TO CONNECT ????
         
-        .i_crc_s_ready (i_crc_s_ready),
-        .i_crc_s_valid (i_crc_s_valid),
-        .i_crc_s_data  (i_crc_s_data )
+        .i_src_tready (fifo_source_tready)
     );
     
     axis_data_fifo_0 AXIS (
@@ -74,12 +71,13 @@ module l4_top#(
         .s_axis_aresetn      (i_rst_fifo),
         .s_axis_aclk         (i_clk     ), //Maybe need its own clock
                                            
-        .s_axis_tready      (s_axis.tready   ),
-        .s_axis_tvalid      (src_fifo_tvalid ),
-        .s_axis_tlast       (src_fifo_tlast  ),
-        .s_axis_tdata       (src_fifo_tdata  ),
+        .s_axis_tready      (fifo_source_tready),
+        .s_axis_tvalid      (src_fifo_tvalid   ),
+        .s_axis_tlast       (src_fifo_tlast    ),
+        .s_axis_tdata       (src_fifo_tdata    ),
                                            
-        .m_axis_tready      (fifo_sink_tready),
+        .m_axis_tready      ('1),
+//        .m_axis_tready      (sink_fifo_tready),
         .m_axis_tvalid      (fifo_sink_tvalid),
         .m_axis_tlast       (fifo_sink_tlast ),
         .m_axis_tdata       (fifo_sink_tdata ),
@@ -95,15 +93,15 @@ module l4_top#(
         .G_BYT       (G_BYT      ),
         .G_BIT_WIDTH (G_BIT_WIDTH)
     ) SINK (
-        .i_reset    (i_rst_sink),
+        .i_rst      (i_rst_sink),
         .i_clk      (i_clk     ),
         
-        .i_sink_tvalid (fifo_sink_tvalid),
-        .i_sink_tdata  (fifo_sink_tdata ),
+        .o_sink_tvalid (fifo_sink_tvalid),
+        .o_sink_tdata  (fifo_sink_tdata ),
         .i_sink_tlast  (fifo_sink_tlast ),
-        .i_sink_ready  (fifo_sink_tready),
         
-        .o_sink_error    (o_top_error),
-        .o_sink_good     (o_top_good )
+        .o_sink_ready  (sink_fifo_tready),
+        .o_sink_error  (o_top_error     ),
+        .o_sink_good   (o_top_good      )
     );
 endmodule

@@ -44,7 +44,7 @@ module l3_sv_auto#(
     t_fsm_states w_next_state, q_crnt_state = S0;
     
     localparam C_MAX = 10;
-    localparam C_WIDTH = int'($ceil($clog2(C_MAX)+1));
+    localparam C_WIDTH = int'($ceil($clog2(C_MAX+1)));
     
     logic [C_WIDTH-1:0] q_cnt = '0;
     

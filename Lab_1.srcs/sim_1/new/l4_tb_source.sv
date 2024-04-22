@@ -1,0 +1,54 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 04/22/2024 11:34:59 AM
+// Design Name: 
+// Module Name: l4_tb_source
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module l4_tb_source#(
+    parameter int G_BYT = 1,             
+    parameter int G_BIT_WIDTH = 8 * G_BYT
+    );
+    
+    localparam T_CLK = 1;
+    
+    bit i_clk = '0;
+    bit i_rst = '0;
+    logic i_src_tready = '0;
+    logic w_tready = '0;
+    l4_source #(
+    
+    ) UUT_1 (
+        .i_src_tready (i_src_tready),
+        .i_clk  (i_clk),
+        .i_rst  (i_rst  )
+    );
+    
+    always#(T_CLK) i_clk = ~i_clk;
+    always#(T_CLK*10) w_tready = ~w_tready; // Problem? check if work
+
+    always_ff @(posedge i_clk)
+        i_src_tready <= w_tready;
+
+    initial begin
+        i_rst = '1;
+        #(T_CLK*10)
+        i_rst = '0;
+    end
+
+endmodule

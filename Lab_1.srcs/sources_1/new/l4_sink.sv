@@ -28,19 +28,25 @@ module l4_sink#(
     parameter int G_BIT_WIDTH = 8 * G_BYT
     )(
     
-    input i_reset,
+    input i_rst,
     input i_clk,
     
-    input i_sink_tvalid,
-    input [G_BIT_WIDTH-1:0] i_sink_tdata,
+    input o_sink_tvalid,
+    input [G_BIT_WIDTH-1:0] o_sink_tdata,
     input i_sink_tlast, // WHERE TO CONNECT ????
-    input i_sink_ready,
     
     output o_sink_good,
-    output o_sink_error
+    output o_sink_error,
+    output o_sink_ready
     );
     
-
+    logic q_clear = '0; 
+    
+    always_ff@(posedge i_clk) begin
+        //o_sink_tdata 
+    end
+    
+    
 //Creating CRC inside Sink    
     crc#(
         .POLY_WIDTH (G_BIT_WIDTH   ), // Size of The Polynomial Vector
@@ -55,12 +61,12 @@ module l4_sink#(
 		.NUM_STAGES (2   )  // Number of Register Stages, Equivalent Latency in Module. Minimum is 1, Maximum is 3.
     ) CRC (
         .i_crc_a_clk_p (i_clk  ), // Rising Edge Clock
-		.i_crc_s_rst_p (i_reset), // Sync Reset, Active High. Reset CRC To Initial Value.
+		.i_crc_s_rst_p (q_clear), // Sync Reset, Active High. Reset CRC To Initial Value.
 		.i_crc_ini_vld ('0     ), // Input Initial Valid
 		.i_crc_ini_dat ('0     ), // Input Initial Value
-		.i_crc_wrd_vld (fifo_sink_tvalid), // Word Data Valid Flag 
-		.o_crc_wrd_rdy (i_sink_ready    ), // Ready To Recieve Word Data
-		.i_crc_wrd_dat (fifo_sink_tdata ), // Word Data
+		.i_crc_wrd_vld (o_sink_tvalid), // Word Data Valid Flag 
+		.o_crc_wrd_rdy (o_sink_ready ), // Ready To Recieve Word Data
+		.i_crc_wrd_dat (o_sink_tdata ), // Word Data
 		.o_crc_res_vld (crc_m_valid), // Output Flag of Validity, Active High for Each WORD_COUNT Number
 		.o_crc_res_dat (crc_m_data )  // Output CRC from Each Input Word
     );
