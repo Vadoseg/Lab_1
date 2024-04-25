@@ -18,7 +18,17 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-
+/*interface if_axis #(parameter int N = 1) ();
+	
+	localparam W = 8 * N; // tdata bit width (N - number of BYTES)
+	
+	logic         tready;
+	logic         tvalid;
+	logic         tlast ;
+	logic [W-1:0] tdata ;
+	
+	modport m(input tready, output tvalid, tlast, tdata);
+endinterface*/
 
 module l4_tb_source#(
     parameter int G_BYT = 1,             
@@ -31,12 +41,17 @@ module l4_tb_source#(
     bit i_rst = '0;
     logic i_src_tready = '0;
     logic w_tready = '0;
+    
+    int i_length = 10;
+    
     l4_source #(
     
     ) UUT_1 (
         .i_src_tready (i_src_tready),
         .i_clk  (i_clk),
-        .i_rst  (i_rst  )
+        .i_rst  (i_rst  ),
+        .i_length (i_length)
+        //.m_axis(m_axis)
     );
     
     always#(T_CLK) i_clk = ~i_clk;
@@ -46,9 +61,26 @@ module l4_tb_source#(
         i_src_tready <= w_tready;
 
     initial begin
-        i_rst = '1;
-        #(T_CLK*10)
-        i_rst = '0;
+//        i_rst = '1;
+//        #(T_CLK*10)
+//        i_rst = '0;
+        #(T_CLK * 20)
+        i_length = 20; // If changing too fast then we lost a size of datapack
+        
+        #(T_CLK * 20)
+        i_length = 0;
+        
+        #(T_CLK * 20)
+        i_length = 30;
+        
+        #(T_CLK * 20)
+        i_length = 0;
+        
+        #(T_CLK * 20)
+        i_length = 10;
+        
+        #(T_CLK * 20)
+        i_length = 0;
     end
 
 endmodule
