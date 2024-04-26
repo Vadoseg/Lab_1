@@ -57,7 +57,10 @@ module l4_tb_source#(
     always#(T_CLK) i_clk = ~i_clk;
     always#(T_CLK*10) w_tready = ~w_tready; // Problem? check if work
 
+    // maybe? always#(T_CLK*10) m_axis.tready = ~m_axis.tready;
+
     always_ff @(posedge i_clk)
+        // m_axis.tready <= w_tready;
         i_src_tready <= w_tready;
 
     initial begin
