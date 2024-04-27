@@ -32,7 +32,9 @@ endinterface*/
 
 module l4_tb_source#(
     parameter int G_BYT = 1,             
-    parameter int G_BIT_WIDTH = 8 * G_BYT
+    parameter int G_BIT_WIDTH = 8 * G_BYT,
+    parameter int G_DATA_MAX = 10, //Size of data pack
+    parameter int G_CNT_WIDTH = ($ceil($clog2(G_DATA_MAX+1)))
     );
     
     localparam T_CLK = 1;
@@ -42,10 +44,10 @@ module l4_tb_source#(
     logic i_src_tready = '0;
     logic w_tready = '0;
     
-    int i_length = 10;
+    logic [G_CNT_WIDTH-1:0] i_length = '0;
     
     l4_source #(
-    
+        .G_DATA_MAX (G_DATA_MAX)
     ) UUT_1 (
         .i_src_tready (i_src_tready),
         .i_clk  (i_clk),
@@ -68,22 +70,22 @@ module l4_tb_source#(
 //        #(T_CLK*10)
 //        i_rst = '0;
         #(T_CLK * 20)
-        i_length = 20; // If changing too fast then we lost a size of datapack
+        i_length <= G_DATA_MAX; // If changing too fast then we lost a size of datapack
+        
+        /*#(T_CLK * 20)
+        i_length <= 0;
         
         #(T_CLK * 20)
-        i_length = 0;
+        i_length <= 30;
         
         #(T_CLK * 20)
-        i_length = 30;
+        i_length <= 0;
         
         #(T_CLK * 20)
-        i_length = 0;
+        i_length <= 10;
         
         #(T_CLK * 20)
-        i_length = 10;
-        
-        #(T_CLK * 20)
-        i_length = 0;
+        i_length <= 0;*/
     end
 
 endmodule

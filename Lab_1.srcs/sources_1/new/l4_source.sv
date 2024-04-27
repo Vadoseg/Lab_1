@@ -48,7 +48,7 @@ module l4_source#(
     input i_rst,
     input i_clk,
     
-    input [G_CNT_WIDTH-1:0] i_length, // input for size of data pack
+    input logic [G_CNT_WIDTH-1:0] i_length, // input for size of data pack
     
     /*if_axis.m m_axis,*/
            
@@ -82,7 +82,7 @@ module l4_source#(
     localparam int C_PAUSE_MAX = 20;
     localparam int C_IDLE_MAX  = 50;
     
-    int buf_length; // Needed bcs we need to remember last input on i_length
+    logic [G_CNT_WIDTH-1:0] buf_length = '0; // Needed bcs we need to remember last input on i_length
     
     localparam int C_PAUSE_WIDTH = ($ceil($clog2(C_PAUSE_MAX+1)));
     localparam int C_IDLE_WIDTH  = ($ceil($clog2(C_IDLE_MAX+1)));
