@@ -134,6 +134,7 @@ module l4_source#(
                     // m_axis.tvalid <= '0;   
                     o_src_tvalid <= '0;
                     o_src_tdata <= q_data_cnt;
+                    q_data_cnt <= q_data_cnt + 1;
                 end          
             end
             S3: begin
@@ -141,10 +142,10 @@ module l4_source#(
                 o_src_tvalid <= '1;
                 if (i_src_tready && o_src_tvalid) begin
                     // m_axis.tdata <= q_data_cnt;
-                    o_src_tdata <= q_data_cnt + 1;
+                    o_src_tdata <= q_data_cnt;
                     q_data_cnt <= q_data_cnt + 1; 
                     
-                    if (q_data_cnt == buf_length) begin
+                    if (q_data_cnt == buf_length + 1) begin
                         q_crnt_state <= S4;
                         q_data_cnt <= 1;
                         // m_axis.tvalid <= '0; 

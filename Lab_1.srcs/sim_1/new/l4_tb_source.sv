@@ -70,7 +70,7 @@ module l4_tb_source#(
 //        #(T_CLK*10)
 //        i_rst = '0;
         #(T_CLK * 20)
-        i_length <= G_DATA_MAX; // If changing too fast then we lost a size of datapack
+        i_length <= G_DATA_MAX; // G_DATA_MAX need to be equal or bigger than i_length
         
         /*#(T_CLK * 20)
         i_length <= 0;
