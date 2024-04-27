@@ -68,7 +68,7 @@ module l4_source#(
         S6 = 6      // Idle
     } t_fsm_states;
     
-    t_fsm_states q_crnt_state = S0;
+    t_fsm_states w_next_state, q_crnt_state = S0;
     
 // Interface init
 
@@ -101,15 +101,13 @@ module l4_source#(
         
         if (i_length > 0) 
             buf_length = i_length;
-
-// we can make tvalid <= '1 and make signal without spaces, it will not affect generation of datapack. We will still have HEADER and LENGTH, and PAYLOAD
         
         case(q_crnt_state)
             S0: begin
                 q_idle_cnt <= '0;
                 q_data_cnt <= 1;
             //  q_crnt_state <= (m_axis.tready) ? S1 : S0;
-            //  m_axis.tvalid  <= '0; // HOW TO WRITE m.m_axis.tvalid or m.m_axis.tvalid(without m)
+            //  m_axis.tvalid  <= '0;
                 q_crnt_state <= (i_src_tready) ? S1 : S0;
                 o_src_tvalid <= '0;
             end
@@ -185,42 +183,46 @@ module l4_source#(
             q_crnt_state <= S0;
     end
 
-    /*always_comb begin
+   /* always_comb begin
+
+        w_next_state = q_crnt_state;
+
         case(q_crnt_state)
             S0:
-                q_crnt_state = (i_src_tready) ? S1 : S0; 
+                w_next_state = (i_src_tready) ? S1 : S0; 
             S1:
-                q_crnt_state = (i_src_tready && o_src_tvalid) ? S2 : S1;
+                w_next_state = (i_src_tready && o_src_tvalid) ? S2 : S1;
             S2:
-                q_crnt_state = (i_src_tready && o_src_tvalid) ? S3 : S2;
+                w_next_state = (i_src_tready && o_src_tvalid) ? S3 : S2;
             S3:
-                q_crnt_state = (i_src_tready && o_src_tvalid && (q_data_cnt == DATA_MAX)) ? S4 : S3;
+                w_next_state = (i_src_tready && o_src_tvalid && (q_data_cnt == buf_length + 1)) ? S4 : S3;
             S4:
-                q_crnt_state = S5;
+                w_next_state = S5;
             S5:
-                q_crnt_state = (i_src_tready && o_src_tvalid) ? S6 : S5; 
+                w_next_state = (i_src_tready && o_src_tvalid) ? S6 : S5; 
             S6:
-                q_crnt_state = (q_idle_cnt == C_IDLE_MAX - 1) ? S0 : S6;
+                w_next_state = (q_idle_cnt == C_IDLE_MAX - 1) ? S0 : S6;
             default:
-                q_crnt_state = S0;
+                w_next_state = S0;
         endcase;
-        
-        if (i_rst)
-            q_crnt_state <= S0;
     end
 
+
     always_ff@(posedge i_clk) begin
-        
+        if (i_rst)
+                q_crnt_state <= S0;
+            else 
+                q_crnt_state <= w_next_state;
+                
         if (i_length > 0) 
             buf_length = i_length;
 
         case(q_crnt_state)
             S0: begin
                 q_idle_cnt <= '0;
-                q_data_cnt <= '1;
+                q_data_cnt <= 1;
                 o_src_tvalid <= '0;
                 
-                DATA_MAX <= buf_length;
             end
             S1: begin
                 o_src_tvalid <= '1;
@@ -229,17 +231,21 @@ module l4_source#(
             end
             S2: begin
                 o_src_tvalid <= '1;
-                o_src_tdata  <= DATA_MAX;
-                o_src_tvalid <= (i_src_tready && o_src_tvalid) ? '0 : '1;
-                o_src_tdata <= q_data_cnt;
+                o_src_tdata  <= buf_length;
+                if (i_src_tready && o_src_tvalid) begin  // Change to m_axis.tready && m_axis.tvalid
+                    q_crnt_state <= S3; 
+                    o_src_tvalid <= '0;
+                    o_src_tdata <= q_data_cnt;
+                    q_data_cnt <= q_data_cnt + 1;
+                end
             end
             S3: begin
                 o_src_tvalid <= '1;
                 if (i_src_tready && o_src_tvalid) begin
-                    o_src_tdata <= q_data_cnt + 1 ;
+                    o_src_tdata <= q_data_cnt;
                     q_data_cnt <= q_data_cnt + 1; 
                     
-                    if (q_data_cnt == DATA_MAX) begin
+                    if (q_data_cnt == buf_length + 1) begin
                         q_data_cnt <= 1;
                         o_src_tvalid <= '0;
                     end
@@ -261,10 +267,8 @@ module l4_source#(
             end
             default: begin
                 q_idle_cnt <= '0;
-                q_data_cnt <= '1;
+                q_data_cnt <= 1;
                 o_src_tvalid <= '0;
-                
-                DATA_MAX <= buf_length;
             end
         endcase;
     end*/
