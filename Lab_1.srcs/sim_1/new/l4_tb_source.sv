@@ -66,6 +66,7 @@ module l4_tb_source#(
         i_src_tready <= w_tready;
 
     initial begin
+//        m_axis.tready <= '0;
 //        i_rst = '1;
 //        #(T_CLK*10)
 //        i_rst = '0;

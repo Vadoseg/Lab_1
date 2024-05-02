@@ -31,9 +31,9 @@ module l4_sink#(
     input i_rst,
     input i_clk,
     
-    input o_sink_tvalid,
-    input [G_BIT_WIDTH-1:0] o_sink_tdata,
-    input i_sink_tlast, // WHERE TO CONNECT ????
+    input i_sink_tvalid,
+    input [G_BIT_WIDTH-1:0] i_sink_tdata,
+    input i_sink_tlast,
     
     output o_sink_good,
     output o_sink_error,
@@ -41,9 +41,73 @@ module l4_sink#(
     );
     
     logic q_clear = '0; 
-    
+    logic /*[]*/ q_data_cnt = '0;
+    logic [G_BIT_WIDTH-1:0] q_crc_tdata = '0;
+    logic Length = '0;
+
+    logic m_crc_valid = '0;
+    logic [G_BIT_WIDTH-1:0] m_crc_data = '0;
+
+    typedef enum{
+        S0 = 0,     // Ready/Init
+        S1 = 1,     // Header
+        S2 = 2,     // Length
+        S3 = 3,     // Payload
+        S4 = 4,     // CRC_PAUSE
+        S5 = 5,     // CRC_DATA
+        S6 = 6      // Idle
+    } t_fsm_states;
+
     always_ff@(posedge i_clk) begin
         //o_sink_tdata 
+        case(q_crnt_state)
+            S0: begin
+                q_crnt_state <= S1;
+                q_data_cnt <= 1;
+            end
+            S1: begin 
+                if(i_sink_tvalid) begin
+                    q_crc_tdata <= i_sink_tdata;   // Header
+                    q_crnt_state <= S2;
+                end
+            end
+            S2: begin 
+                if(i_sink_tvalid) begin
+                    Length <= i_sink_tdata;   // Length
+                    q_crnt_state <= S3;
+                end
+            end
+            S3: begin
+                if(i_sink_tvalid) begin
+                    q_crc_tdata <= i_sink_tdata;
+                    q_data_cnt <= q_data_cnt + 1;   // Length
+                    
+                    if (q_data_cnt == Length + 1) begin
+                        q_crnt_state <= S4;
+                        q_data_cnt <= 1;
+                    end
+                end
+            end
+            S4: begin
+                q_crnt_state <= S5;
+            end
+            S5: begin
+                q_clear <= (i_sink_tvalid);
+                if(i_sink_tvalid) begin
+                    if(i_sink_tlast && (m_crc_data == i_sink_tdata)) begin
+                        o_sink_good <= '1;
+                    end
+                    else if (i_sink_tlast && (m_crc_data != i_sink_tdata)) begin
+                        o_sink_error <= '1;
+                    end
+                    o_sink_good <= '0;
+                    o_sink_error <= '0;
+                end
+            end
+        endcase
+        
+        if (i_rst)
+            q_crnt_state <= S0;
     end
     
     
@@ -64,11 +128,11 @@ module l4_sink#(
 		.i_crc_s_rst_p (q_clear), // Sync Reset, Active High. Reset CRC To Initial Value.
 		.i_crc_ini_vld ('0     ), // Input Initial Valid
 		.i_crc_ini_dat ('0     ), // Input Initial Value
-		.i_crc_wrd_vld (o_sink_tvalid), // Word Data Valid Flag 
+		.i_crc_wrd_vld (i_sink_tvalid && (q_crnt_state != S1)), // Word Data Valid Flag 
 		.o_crc_wrd_rdy (o_sink_ready ), // Ready To Recieve Word Data
-		.i_crc_wrd_dat (o_sink_tdata ), // Word Data
-		.o_crc_res_vld (crc_m_valid), // Output Flag of Validity, Active High for Each WORD_COUNT Number
-		.o_crc_res_dat (crc_m_data )  // Output CRC from Each Input Word
+		.i_crc_wrd_dat (q_crc_tdata ), // Word Data
+		.o_crc_res_vld (m_crc_valid), // Output Flag of Validity, Active High for Each WORD_COUNT Number
+		.o_crc_res_dat (m_crc_data )  // Output CRC from Each Input Word
     );
     
 endmodule

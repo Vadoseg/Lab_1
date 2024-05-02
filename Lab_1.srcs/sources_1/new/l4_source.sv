@@ -68,7 +68,7 @@ module l4_source#(
         S6 = 6      // Idle
     } t_fsm_states;
     
-    t_fsm_states w_next_state, q_crnt_state = S0;
+    t_fsm_states /*w_next_state,*/ q_crnt_state = S0;
     
 // Interface init
 
@@ -79,18 +79,18 @@ module l4_source#(
     // end
 
 // Local constants    
-    localparam int C_PAUSE_MAX = 20;
+    // localparam int C_PAUSE_MAX = 20;
     localparam int C_IDLE_MAX  = 50;
     
     logic [G_CNT_WIDTH-1:0] buf_length = '0; // Needed bcs we need to remember last input on i_length
     
-    localparam int C_PAUSE_WIDTH = ($ceil($clog2(C_PAUSE_MAX+1)));
+    // localparam int C_PAUSE_WIDTH = ($ceil($clog2(C_PAUSE_MAX+1)));
     localparam int C_IDLE_WIDTH  = ($ceil($clog2(C_IDLE_MAX+1)));
     
 // Making counts for states of FSM-------------------------------------    
     
     logic [G_CNT_WIDTH-1:0]  q_data_cnt  = '0;  // How to make size dynamic (Or we can use size of int [31:0])
-    logic [C_PAUSE_WIDTH-1:0] q_pause_cnt = '0;
+    // logic [C_PAUSE_WIDTH-1:0] q_pause_cnt = '0;
     logic [C_IDLE_WIDTH-1:0]  q_idle_cnt  = '0;
  
     logic q_clear = '0;  // We can get rid of this bcs we can use (i_src_tready && o_src_tvalid) in crc

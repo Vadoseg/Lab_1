@@ -27,7 +27,10 @@ interface if_axis #(parameter int N = 1) ();
 	logic         tvalid;
 	logic         tlast ;
 	logic [W-1:0] tdata ;
-endinterface
+	
+	/*modport m (input tready, output tvalid, tlast, tdata);
+	modport s (output tready, input tvalid, tlast, tdata);*/
+endinterface : if_axis
 
 module l4_top#(
     parameter int G_BYT = 1,
@@ -71,16 +74,16 @@ module l4_top#(
         .s_axis_aresetn      (i_rst_fifo),
         .s_axis_aclk         (i_clk     ), //Maybe need its own clock
                                            
-        .s_axis_tready      (fifo_source_tready),
+        .s_axis_tready      (sink_fifo_tready  ),
         .s_axis_tvalid      (src_fifo_tvalid   ),
         .s_axis_tlast       (src_fifo_tlast    ),
         .s_axis_tdata       (src_fifo_tdata    ),
                                            
-        .m_axis_tready      ('1),
-//        .m_axis_tready      (sink_fifo_tready),
-        .m_axis_tvalid      (fifo_sink_tvalid),
-        .m_axis_tlast       (fifo_sink_tlast ),
-        .m_axis_tdata       (fifo_sink_tdata ),
+        // .m_axis_tready      ('1),
+        .m_axis_tready      (fifo_source_tready),
+        .m_axis_tvalid      (fifo_sink_tvalid  ),
+        .m_axis_tlast       (fifo_sink_tlast   ),
+        .m_axis_tdata       (fifo_sink_tdata   ),
                                            
         .axis_wr_data_count (             ),
         .axis_rd_data_count (             ),
@@ -96,8 +99,8 @@ module l4_top#(
         .i_rst      (i_rst_sink),
         .i_clk      (i_clk     ),
         
-        .o_sink_tvalid (fifo_sink_tvalid),
-        .o_sink_tdata  (fifo_sink_tdata ),
+        .i_sink_tvalid (fifo_sink_tvalid),
+        .i_sink_tdata  (fifo_sink_tdata ),
         .i_sink_tlast  (fifo_sink_tlast ),
         
         .o_sink_ready  (sink_fifo_tready),
