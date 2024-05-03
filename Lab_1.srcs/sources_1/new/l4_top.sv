@@ -34,7 +34,8 @@ endinterface : if_axis
 
 module l4_top#(
     parameter int G_BYT = 1,
-    parameter int G_BIT_WIDTH = 8 * G_BYT
+    parameter int G_BIT_WIDTH = 8 * G_BYT,
+    parameter int G_LENGTH = 10 // LENGTH of data pack
 )(
     
     input i_rst_src, //Maybe not in use because every module has its own reset
@@ -42,9 +43,6 @@ module l4_top#(
     input i_rst_fifo,
     input i_clk,
 
-// Inputs for CRC in Source
-/*    input crc_s_valid,
-    input [G_BIT_WIDTH-1:0] crc_s_data,*/
     
 // Output from Sink    
     output o_top_error,
@@ -62,11 +60,13 @@ module l4_top#(
         .i_rst      (i_rst_src),
         .i_clk      (i_clk    ),
         
-        .o_src_tvalid (src_fifo_tvalid),
-        .o_src_tdata  (src_fifo_tdata ),
-        .o_src_tlast  (src_fifo_tlast ), // WHERE TO CONNECT ????
+        .o_src_tvalid (s_axis.tvalid),
+        .o_src_tdata  (s_axis.tdata ),
+        .o_src_tlast  (s_axis.tlast ),
         
-        .i_src_tready (fifo_source_tready)
+        .i_src_tready (m_axis.tready),
+        
+        .i_length (G_LENGTH)
     );
     
     axis_data_fifo_0 AXIS (
@@ -74,16 +74,16 @@ module l4_top#(
         .s_axis_aresetn      (i_rst_fifo),
         .s_axis_aclk         (i_clk     ), //Maybe need its own clock
                                            
-        .s_axis_tready      (sink_fifo_tready  ),
-        .s_axis_tvalid      (src_fifo_tvalid   ),
-        .s_axis_tlast       (src_fifo_tlast    ),
-        .s_axis_tdata       (src_fifo_tdata    ),
+        .s_axis_tready      (s_axis.tready),    //sink-fifo
+        .s_axis_tvalid      (s_axis.tvalid),    //src-fifo
+        .s_axis_tlast       (s_axis.tlast ),    //src-fifo
+        .s_axis_tdata       (s_axis.tdata ),    //src-fifo
                                            
         // .m_axis_tready      ('1),
-        .m_axis_tready      (fifo_source_tready),
-        .m_axis_tvalid      (fifo_sink_tvalid  ),
-        .m_axis_tlast       (fifo_sink_tlast   ),
-        .m_axis_tdata       (fifo_sink_tdata   ),
+        .m_axis_tready      (m_axis.tready),    //fifo-source
+        .m_axis_tvalid      (m_axis.tvalid),    //fifo-sink
+        .m_axis_tlast       (m_axis.tlast ),    //fifo-sink
+        .m_axis_tdata       (m_axis.tdata ),    //fifo-sink
                                            
         .axis_wr_data_count (             ),
         .axis_rd_data_count (             ),
@@ -99,11 +99,11 @@ module l4_top#(
         .i_rst      (i_rst_sink),
         .i_clk      (i_clk     ),
         
-        .i_sink_tvalid (fifo_sink_tvalid),
-        .i_sink_tdata  (fifo_sink_tdata ),
-        .i_sink_tlast  (fifo_sink_tlast ),
+        .i_sink_tvalid (m_axis.tvalid),
+        .i_sink_tdata  (m_axis.tdata ),
+        .i_sink_tlast  (m_axis.tlast ),
         
-        .o_sink_ready  (sink_fifo_tready),
+        .o_sink_ready  (s_axis.tready   ),
         .o_sink_error  (o_top_error     ),
         .o_sink_good   (o_top_good      )
     );

@@ -42,7 +42,6 @@ module l4_source#(
 
 
 //For CRC      
-    input i_crc_s_ready,
  
 //For Source
     input i_rst,
@@ -53,9 +52,9 @@ module l4_source#(
     /*if_axis.m m_axis,*/
            
     input i_src_tready,
-    output logic o_src_tvalid = '0,
-    output logic [G_BIT_WIDTH-1:0] o_src_tdata = '0,
-    output logic o_src_tlast = '0
+    output logic o_src_tvalid,
+    output logic [G_BIT_WIDTH-1:0] o_src_tdata,
+    output logic o_src_tlast
     );
     
     typedef enum{
@@ -68,7 +67,7 @@ module l4_source#(
         S6 = 6      // Idle
     } t_fsm_states;
     
-    t_fsm_states /*w_next_state,*/ q_crnt_state = S0;
+    t_fsm_states q_crnt_state = S0;
     
 // Interface init
 
@@ -94,8 +93,8 @@ module l4_source#(
     logic [C_IDLE_WIDTH-1:0]  q_idle_cnt  = '0;
  
     logic q_clear = '0;  // We can get rid of this bcs we can use (i_src_tready && o_src_tvalid) in crc
-    logic m_crc_valid = '0;
-    logic [G_BIT_WIDTH-1:0] m_crc_data = '0;
+    logic m_crc_valid ;
+    logic [G_BIT_WIDTH-1:0] m_crc_data ;
 // FSM-----------------------------------------------------------------  
     always_ff @(posedge i_clk) begin
         

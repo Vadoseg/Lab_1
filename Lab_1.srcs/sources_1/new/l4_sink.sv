@@ -31,12 +31,12 @@ module l4_sink#(
     input i_rst,
     input i_clk,
     
-    input i_sink_tvalid,
-    input [G_BIT_WIDTH-1:0] i_sink_tdata,
-    input i_sink_tlast,
+    input logic i_sink_tvalid,
+    input logic [G_BIT_WIDTH-1:0] i_sink_tdata,
+    input logic i_sink_tlast,
     
-    output o_sink_good,
-    output o_sink_error,
+    output logic o_sink_good,
+    output logic o_sink_error,
     output o_sink_ready
     );
     
@@ -45,8 +45,8 @@ module l4_sink#(
     logic [G_BIT_WIDTH-1:0] q_crc_tdata = '0;
     logic Length = '0;
 
-    logic m_crc_valid = '0;
-    logic [G_BIT_WIDTH-1:0] m_crc_data = '0;
+    logic m_crc_valid ;
+    logic [G_BIT_WIDTH-1:0] m_crc_data ;
 
     typedef enum{
         S0 = 0,     // Ready/Init
@@ -58,6 +58,8 @@ module l4_sink#(
         S6 = 6      // Idle
     } t_fsm_states;
 
+    t_fsm_states q_crnt_state = S0;
+    
     always_ff@(posedge i_clk) begin
         //o_sink_tdata 
         case(q_crnt_state)
