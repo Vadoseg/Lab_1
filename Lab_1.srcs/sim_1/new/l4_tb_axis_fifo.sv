@@ -19,7 +19,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-interface if_axis #(parameter int N = 1) ();
+/*interface if_axis #(parameter int N = 1) ();
 	
 	localparam W = 8 * N; // tdata bit width (N - number of BYTES)
 	
@@ -27,7 +27,7 @@ interface if_axis #(parameter int N = 1) ();
 	logic         tvalid;
 	logic         tlast ;
 	logic [W-1:0] tdata ;
-endinterface
+endinterface*/
 
 module l4_tb_axis_fifo#(
 

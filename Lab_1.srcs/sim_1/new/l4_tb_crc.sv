@@ -21,6 +21,7 @@ logic [W-1:0] s_data  = '0;
 logic         m_valid = '0;
 logic [W-1:0] m_data  = '0;
 
+int i = 0;
 // task: send test sequence
 task send_pkt;
 	input bit i_use_reset;
@@ -41,7 +42,6 @@ task send_pkt;
 endtask : send_pkt
 
 // simulate input data
-int i = 0;
 initial begin : sim_proc
 	q_clear = '0;
 	s_valid = '0;

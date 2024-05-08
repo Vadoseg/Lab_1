@@ -28,7 +28,9 @@
 	logic         tlast ;
 	logic [W-1:0] tdata ;
 	
-	modport m(input tready, output tvalid, tlast, tdata);
+	modport m (input tready, output tvalid, tlast, tdata);
+	modport s (output tready, input tvalid, tlast, tdata);
+	
 endinterface : if_axis*/
 
 module l4_source#(
@@ -49,12 +51,12 @@ module l4_source#(
     
     input logic [G_CNT_WIDTH-1:0] i_length, // input for size of data pack
     
-    /*if_axis.m m_axis,*/
+    //if_axis.m m_axis
            
-    input i_src_tready,
-    output logic o_src_tvalid,
-    output logic [G_BIT_WIDTH-1:0] o_src_tdata,
-    output logic o_src_tlast
+    input i_src_tready = '0,
+    output logic o_src_tvalid = '0,
+    output logic [G_BIT_WIDTH-1:0] o_src_tdata = '0,
+    output logic o_src_tlast = '0
     );
     
     typedef enum{
@@ -70,16 +72,16 @@ module l4_source#(
     t_fsm_states q_crnt_state = S0;
     
 // Interface init
-
-    // initial begin           // No m_axis.tready bcs its input
-    //     m_axis.tvalid = '0;
-    //     m_axis.tdata  = '0;
-    //     m_axis.tlast  = '0;
-    // end
+    
+//     initial begin           // No m_axis.tready bcs its input
+//         m_axis.tvalid = '0;
+//         m_axis.tdata  = '0;
+//         m_axis.tlast  = '0;
+//     end
 
 // Local constants    
     // localparam int C_PAUSE_MAX = 20;
-    localparam int C_IDLE_MAX  = 50;
+    localparam int C_IDLE_MAX  = 25;
     
     logic [G_CNT_WIDTH-1:0] buf_length = '0; // Needed bcs we need to remember last input on i_length
     
@@ -105,47 +107,48 @@ module l4_source#(
             S0: begin
                 q_idle_cnt <= '0;
                 q_data_cnt <= 1;
-            //  q_crnt_state <= (m_axis.tready) ? S1 : S0;
-            //  m_axis.tvalid  <= '0;
+//                q_crnt_state <= (m_axis.tready) ? S1 : S0;
+//                m_axis.tvalid  <= '0;
                 q_crnt_state <= (i_src_tready) ? S1 : S0;
                 o_src_tvalid <= '0;
             end
             S1: begin
-            //  m_axis.tvalid  <= '1;
-            //  m_axis.tdata <= 72;
+//                m_axis.tvalid  <= '1;
+//                m_axis.tdata <= 72;
                 o_src_tvalid <= '1;
                 o_src_tdata  <= 72;
                 if (i_src_tready && o_src_tvalid) begin  // Change to m_axis.tready && m_axis.tvalid
                     q_crnt_state <= S2;
                     o_src_tvalid <= '0;
-                    // m_axis.tvalid <= '0;    
+//                    m_axis.tvalid <= '0;    
                 end
             end
             S2:begin
-            //  m_axis.tvalid  <= '1;
-            //  m_axis.tdata <= DATA_MAX;
+//                m_axis.tvalid  <= '1;
+//                m_axis.tdata <= buf_length;
                 o_src_tvalid <= '1;
                 o_src_tdata  <= buf_length;
                 if (i_src_tready && o_src_tvalid) begin  // Change to m_axis.tready && m_axis.tvalid
                     q_crnt_state <= S3;
-                    // m_axis.tvalid <= '0;   
+//                     m_axis.tvalid <= '0;
+//                     m_axis.tvalid <= q_data_cnt;
                     o_src_tvalid <= '0;
                     o_src_tdata <= q_data_cnt;
                     q_data_cnt <= q_data_cnt + 1;
                 end          
             end
             S3: begin
-            //  m_axis.tvalid  <= '1;
+//                m_axis.tvalid  <= '1;
                 o_src_tvalid <= '1;
                 if (i_src_tready && o_src_tvalid) begin
-                    // m_axis.tdata <= q_data_cnt;
+//                    m_axis.tdata <= q_data_cnt;
                     o_src_tdata <= q_data_cnt;
                     q_data_cnt <= q_data_cnt + 1; 
                     
                     if (q_data_cnt == buf_length + 1) begin
                         q_crnt_state <= S4;
                         q_data_cnt <= 1;
-                        // m_axis.tvalid <= '0; 
+//                        m_axis.tvalid <= '0; 
                         o_src_tvalid <= '0;
                     end
                 end
@@ -155,16 +158,16 @@ module l4_source#(
             end
             S5: begin                
                 q_clear <= (i_src_tready && o_src_tvalid);
-                // m_axis.tvalid  <= '1;
-                // m_axis.tlast <= '1;
-                // m_axis.tdata <= m_crc_data;
+//                m_axis.tvalid  <= '1;
+//                m_axis.tlast <= '1;
+//                m_axis.tdata <= m_crc_data;
                 o_src_tvalid <= '1;
                 o_src_tlast  <= '1;
                 o_src_tdata <= m_crc_data;
                 if (i_src_tready && o_src_tvalid) begin
                     q_crnt_state <= S6;
-                    // m_axis.tvalid  <= '0;
-                    // m_axis.tlast <= '0;
+//                    m_axis.tvalid  <= '0;
+//                    m_axis.tlast <= '0;
                     o_src_tvalid <= '0;
                     o_src_tlast  <= '0;
                 end            
@@ -289,7 +292,7 @@ module l4_source#(
 		.i_crc_s_rst_p (q_clear), // Sync Reset, Active High. Reset CRC To Initial Value.
 		.i_crc_ini_vld ('0     ), // Input Initial Valid
 		.i_crc_ini_dat ('0     ), // Input Initial Value
-		.i_crc_wrd_vld ((i_src_tready && o_src_tvalid /*m_axis.tready && m_axis.tvalid*/) && (q_crnt_state != S1) /* && (q_crnt_state == S3)*/), // Word Data Valid Flag 
+		.i_crc_wrd_vld ((i_src_tready && o_src_tvalid /*m_axis.tready && m_axis.tvalid*/) && (q_crnt_state != S1)), // Word Data Valid Flag 
 		.o_crc_wrd_rdy (/* Nothing bcs source don't output ready*/), // Ready To Recieve Word Data
 		.i_crc_wrd_dat (o_src_tdata /*m_axis.tdata*/), // Word Data
 		.o_crc_res_vld (m_crc_valid), // Output Flag of Validity, Active High for Each WORD_COUNT Number

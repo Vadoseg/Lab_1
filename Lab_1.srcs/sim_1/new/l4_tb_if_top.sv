@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 05/02/2024 07:32:41 PM
+// Create Date: 05/08/2024 02:25:51 PM
 // Design Name: 
-// Module Name: l4_tb_top
+// Module Name: l4_tb_if_top
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module l4_tb_top#(
+module l4_tb_if_top#(
         parameter int G_BYT = 1,
         parameter int G_BIT_WIDTH = 8 * G_BYT,
         parameter G_DATA_MAX = 10 // Size of pack
@@ -32,7 +32,7 @@ module l4_tb_top#(
     bit [2:0] i_rst  = '0;
     localparam T_CLK = 1;
 
-    l4_top #(
+    l4_if_top #(
         .G_BYT (G_BYT),
         .G_BIT_WIDTH (G_BIT_WIDTH),
         .G_DATA_MAX (G_DATA_MAX)

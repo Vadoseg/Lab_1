@@ -109,9 +109,21 @@ module crc #(
   end : check_param
 
   // Input Data Assignment & Reset
-  wire wordVector w_crc_r_bytes = ( BYTES_RVRS ) ? { << 8 {i_crc_wrd_dat} } : i_crc_wrd_dat;
+  // wire wordVector w_crc_r_bytes = ( BYTES_RVRS ) ? { << 8 {i_crc_wrd_dat} } : i_crc_wrd_dat;
 
-  wire wordVector w_crc_ref_dat = ( CRC_REF_IN ) ? { << {{ << 8 {w_crc_r_bytes} }} } : w_crc_r_bytes;
+  // wire wordVector w_crc_ref_dat = ( CRC_REF_IN ) ? { << {{ << 8 {w_crc_r_bytes} }} } : w_crc_r_bytes;
+
+  wire wordVector w_crc_r_bytes;
+  wire wordVector w_crc_ref_dat;
+
+  if ( BYTES_RVRS )   
+    assign w_crc_r_bytes = { << 8 {i_crc_wrd_dat} };
+  else
+    assign w_crc_r_bytes = i_crc_wrd_dat;
+  if ( CRC_REF_IN )   
+    assign w_crc_ref_dat = { << {{ << 8 {w_crc_r_bytes} }} };
+  else
+    assign w_crc_ref_dat = w_crc_r_bytes;
 
   wire w_crc_s_rst_p;
   wire w_crc_wrd_vld;

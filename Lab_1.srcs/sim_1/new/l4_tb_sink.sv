@@ -32,7 +32,8 @@ module l4_tb_sink#(
     bit i_sink_tlast = '0;
     logic [G_BIT_WIDTH-1:0] i_sink_tdata = '0;
     
-    localparam T_CLK = 1e9 / 1e9;
+    localparam T_CLK = 1;
+    localparam C_PACK_LENGTH = 10;
 
     l4_sink#( 
         .G_BYT       (G_BYT      ),
@@ -54,20 +55,20 @@ module l4_tb_sink#(
     // S0: Init
 
     // S1
-    /*i_sink_tvalid = '1;  // Header is not coming in
+    i_sink_tvalid = '1;  // Header is not coming in
     i_sink_tdata  = 72;
     #(T_CLK * 20)
-    i_sink_tvalid = '0;*/
+    i_sink_tvalid = '0;
     
     // S2
     #(T_CLK * 20)
     i_sink_tvalid = '1;
-    i_sink_tdata = 10;
+    i_sink_tdata = C_PACK_LENGTH;
     #(T_CLK * 20)
 
     // S3
     #(T_CLK * 20)
-    for (int i = 1; i < 11; i++) begin
+    for (int i = 1; i < C_PACK_LENGTH + 1; i++) begin
         i_sink_tdata = i;
         #(T_CLK * 20);
     end
@@ -78,7 +79,7 @@ module l4_tb_sink#(
     // S5
     #(T_CLK * 20)
     i_sink_tvalid = '1;
-    i_sink_tdata  = 'h5B;
+    i_sink_tdata  = 'h5B;  // h6E( for 30)
     i_sink_tlast  = '1;
     #(T_CLK * 20)
     i_sink_tvalid = '0;

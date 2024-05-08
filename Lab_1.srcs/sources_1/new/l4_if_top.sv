@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 04/17/2024 02:36:30 PM
+// Create Date: 05/08/2024 01:49:22 PM
 // Design Name: 
-// Module Name: l4_top
+// Module Name: l4_if_top
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -33,7 +33,7 @@ interface if_axis #(parameter int N = 1) ();
 	
 endinterface : if_axis
 
-module l4_top#(
+module l4_if_top#(
     parameter int G_BYT = 1,
     parameter int G_BIT_WIDTH = 8 * G_BYT,
     parameter int G_DATA_MAX = 10, // Size of data pack
@@ -48,24 +48,19 @@ module l4_top#(
     output o_top_good
     );
     
-    if_axis #(.N(G_BYT)) s_axis ();
-    if_axis #(.N(G_BYT)) m_axis ();
+    if_axis #(.N(G_BYT)) mstr_axis ();
+    if_axis #(.N(G_BYT)) slav_axis ();
     
-    l4_source #(
+    l4_if_source #(
         
-        .G_BYT       (G_BYT      ),
-        .G_BIT_WIDTH (G_BIT_WIDTH)
+        .G_BYT          (G_BYT      ),
+        .G_BIT_WIDTH    (G_BIT_WIDTH)
     ) SOURCE (
         .i_rst      (i_rst[0] ),
         .i_clk      (i_clk    ),
+        .m_axis     (mstr_axis),
         
-        .o_src_tvalid (s_axis.tvalid),
-        .o_src_tdata  (s_axis.tdata ),
-        .o_src_tlast  (s_axis.tlast ),
-        
-        .i_src_tready (s_axis.tready),
-        
-        .i_length (G_LENGTH)  // Need to change size of data pack
+        .i_length   (G_LENGTH )  // Need to change size of data pack
     );
     
     axis_data_fifo_0 AXIS (
@@ -73,37 +68,32 @@ module l4_top#(
         .s_axis_aresetn     (i_rst[1]  ),
         .s_axis_aclk        (i_clk     ), //Maybe need its own clock
                                            
-        .s_axis_tready      (s_axis.tready),    //fifo-source
-        .s_axis_tvalid      (s_axis.tvalid),    //src-fifo
-        .s_axis_tlast       (s_axis.tlast ),    //src-fifo
-        .s_axis_tdata       (s_axis.tdata ),    //src-fifo
+        .s_axis_tvalid      (mstr_axis.tvalid),     // input wire s_axis_tvalid       
+        .s_axis_tready      (mstr_axis.tready),     // output wire s_axis_tready      
+        .s_axis_tdata       (mstr_axis.tdata ),     // input wire [7 : 0] s_axis_tdata
+        .s_axis_tlast       (mstr_axis.tlast ),     // input wire s_axis_tlast                             
+        
+        .m_axis_tvalid      (slav_axis.tvalid),     // output wire m_axis_tvalid       
+        .m_axis_tready      (slav_axis.tready),     // input wire m_axis_tready        
+        .m_axis_tdata       (slav_axis.tdata ),     // output wire [7 : 0] m_axis_tdata 
+        .m_axis_tlast       (slav_axis.tlast ),     // output wire m_axis_tlast        
                                            
-//        .m_axis_tready      ('1),
-        .m_axis_tready      (m_axis.tready),    //sink-fifo
-        .m_axis_tvalid      (m_axis.tvalid),    //fifo-sink
-        .m_axis_tlast       (m_axis.tlast ),    //fifo-sink
-        .m_axis_tdata       (m_axis.tdata ),    //fifo-sink
-                                           
-        .axis_wr_data_count (axis_wr_data_count),
-        .axis_rd_data_count (axis_rd_data_count),
-        .prog_empty         (prog_empty        ),
-        .prog_full          (prog_full         )
+        .axis_wr_data_count (axis_wr_data_count),   
+        .axis_rd_data_count (axis_rd_data_count),   
+        .prog_empty         (prog_empty        ),   
+        .prog_full          (prog_full         )    
         
     );
     
-    l4_sink #(
-        .G_BYT       (G_BYT      ),
-        .G_BIT_WIDTH (G_BIT_WIDTH)
+    l4_if_sink #(
+        .G_BYT          (G_BYT      ),
+        .G_BIT_WIDTH    (G_BIT_WIDTH)
     ) SINK (
         .i_rst      (i_rst[2]  ),
         .i_clk      (i_clk     ),
-        
-        .i_sink_tvalid (m_axis.tvalid),
-        .i_sink_tdata  (m_axis.tdata ),
-        .i_sink_tlast  (m_axis.tlast ),
-        
-        .o_sink_ready  (m_axis.tready   ),
-        .o_sink_error  (o_top_error     ),
-        .o_sink_good   (o_top_good      )
+        .s_axis     (slav_axis ),
+
+        .o_sink_error  (o_top_error),
+        .o_sink_good   (o_top_good )
     );
 endmodule
