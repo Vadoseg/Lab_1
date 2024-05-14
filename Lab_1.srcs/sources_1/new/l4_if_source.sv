@@ -1,20 +1,6 @@
 `timescale 1ns / 1ps
 
 
-/*interface if_axis #(parameter int N = 1) ();
-	
-	localparam W = 8 * N; // tdata bit width (N - number of BYTES)
-	
-	logic         tready;
-	logic         tvalid;
-	logic         tlast ;
-	logic [W-1:0] tdata ;
-	
-	modport m (input tready, output tvalid, tlast, tdata);
-	modport s (output tready, input tvalid, tlast, tdata);
-	
-endinterface : if_axis*/
-
 module l4_if_source#(
 // CRC Generics    
     parameter int G_BYT = 1,
@@ -23,25 +9,20 @@ module l4_if_source#(
     parameter int G_CNT_WIDTH = ($ceil($clog2(G_DATA_MAX+1)))
 )(
 
-
 //For Source
-    input i_rst,
-    input i_clk,
+    input wire i_rst,
+    input wire i_clk,
     
     input logic [G_CNT_WIDTH-1:0] i_length, // input for size of data pack
     
-    if_axis.m m_axis
-           
+    if_axis.m m_axis      
     );
     
     typedef enum{
-        S0 = 0,     // Ready/Init
-        S1 = 1,     // Header
-        S2 = 2,     // Length
-        S3 = 3,     // Payload
-        S4 = 4,     // CRC_PAUSE
-        S5 = 5,     // CRC_DATA
-        S6 = 6      // Idle
+        S0 = 0,     // Ready/Init && Header
+        S1 = 1,     // Length
+        S2 = 2,     // Payload
+        S3 = 3      // CRC_DATA  
     } t_fsm_states;
     
     t_fsm_states q_crnt_state = S0;
@@ -55,19 +36,17 @@ module l4_if_source#(
     end
 
 // Local constants    
-    localparam int C_IDLE_MAX  = 25;
-    
     logic [G_CNT_WIDTH-1:0] buf_length = '0; // Needed bcs we need to remember last input on i_length
-
+    
+    localparam int C_IDLE_MAX  = 25;
     localparam int C_IDLE_WIDTH  = ($ceil($clog2(C_IDLE_MAX+1)));
     
-// Making counts for states of FSM-------------------------------------    
-    
-    logic [G_CNT_WIDTH-1:0]  q_data_cnt  = '0;  // How to make size dynamic (Or we can use size of int [31:0])
+// Making counts for states of FSM  
+    logic [G_CNT_WIDTH-1:0]  q_data_cnt  = '0;
     logic [C_IDLE_WIDTH-1:0]  q_idle_cnt  = '0;
- 
-    // logic q_clear = '0;  // We can get rid of this bcs we can use (i_src_tready && o_src_tvalid) in crc
-    logic m_crc_valid ;
+
+// For CRC 
+    logic m_crc_valid;
     logic [G_BIT_WIDTH-1:0] m_crc_data ;
 // FSM-----------------------------------------------------------------  
     always_ff @(posedge i_clk) begin
@@ -79,59 +58,44 @@ module l4_if_source#(
             S0: begin
                 q_idle_cnt <= '0;
                 q_data_cnt <= 1;
+                m_axis.tdata <= 72;
                 q_crnt_state <= (m_axis.tready) ? S1 : S0;
-                m_axis.tvalid  <= '0;
             end
             S1: begin
-                m_axis.tvalid  <= '1;
-                m_axis.tdata <= 72;
-                if (m_axis.tready && m_axis.tvalid) begin  // Change to m_axis.tready && m_axis.tvalid
-                    q_crnt_state <= S2;
-                    m_axis.tvalid <= '0;    
-                end
-            end
-            S2:begin
-                m_axis.tvalid  <= '1;
                 m_axis.tdata <= buf_length;
-                if (m_axis.tready && m_axis.tvalid) begin  // Change to m_axis.tready && m_axis.tvalid
-                    q_crnt_state <= S3;
+                m_axis.tvalid  <= '1;
+                if (m_axis.tready && m_axis.tvalid) begin
+                    q_crnt_state <= S2;
                     m_axis.tvalid <= '0;
                     m_axis.tdata <= q_data_cnt;
                     q_data_cnt <= q_data_cnt + 1;
-                end          
+                end
             end
-            S3: begin
+            S2: begin
                 m_axis.tvalid  <= '1;
                 if (m_axis.tready && m_axis.tvalid) begin
                     m_axis.tdata <= q_data_cnt;
                     q_data_cnt <= q_data_cnt + 1; 
                     
                     if (q_data_cnt == buf_length + 1) begin
-                        q_crnt_state <= S4;
+                        q_crnt_state <= S3;
                         q_data_cnt <= 1;
                         m_axis.tvalid <= '0; 
                     end
                 end
             end    
-            S4: begin
-                q_crnt_state <= S5; // ADD pause cnt (If it needed)
-            end
-            S5: begin                
-                // q_clear <= (m_axis.tready && m_axis.tvalid);
+            S3: begin                
                 m_axis.tvalid  <= '1;
                 m_axis.tlast <= '1;
                 m_axis.tdata <= m_crc_data;
+                
                 if (m_axis.tready && m_axis.tvalid) begin
-                    q_crnt_state <= S6;
+                    q_crnt_state <= S0;
                     m_axis.tvalid  <= '0;
                     m_axis.tlast <= '0;
                 end            
             end
-            S6: begin
-                q_crnt_state <= (q_idle_cnt == C_IDLE_MAX-1) ? S0 : S6;
-                q_idle_cnt <= q_idle_cnt+1;
-                // q_clear <= '0;
-            end
+            
             default:
                 q_crnt_state <= S0;
         endcase;
@@ -154,10 +118,10 @@ module l4_if_source#(
 		.NUM_STAGES (2   )  // Number of Register Stages, Equivalent Latency in Module. Minimum is 1, Maximum is 3.
     ) CRC (
         .i_crc_a_clk_p (i_clk  ), // Rising Edge Clock
-		.i_crc_s_rst_p (m_axis.tready && m_axis.tvalid && q_crnt_state == S5), // Sync Reset, Active High. Reset CRC To Initial Value.
+		.i_crc_s_rst_p (m_axis.tready && m_axis.tvalid && q_crnt_state == S3), // Sync Reset, Active High. Reset CRC To Initial Value.
 		.i_crc_ini_vld ('0     ), // Input Initial Valid
 		.i_crc_ini_dat ('0     ), // Input Initial Value
-		.i_crc_wrd_vld ((m_axis.tready && m_axis.tvalid) && (q_crnt_state != S1)), // Word Data Valid Flag 
+		.i_crc_wrd_vld ((m_axis.tready && m_axis.tvalid)), // Word Data Valid Flag 
 		.o_crc_wrd_rdy (/* Nothing bcs source don't output ready*/), // Ready To Recieve Word Data
 		.i_crc_wrd_dat (m_axis.tdata), // Word Data
 		.o_crc_res_vld (m_crc_valid), // Output Flag of Validity, Active High for Each WORD_COUNT Number
