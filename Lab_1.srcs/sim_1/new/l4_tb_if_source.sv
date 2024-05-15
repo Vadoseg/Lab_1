@@ -47,7 +47,7 @@ module l4_tb_if_source#(
 
     initial begin
         m_axis.tready <= '0;
-        #(T_CLK * 20)
+        #(T_CLK * 5)
         i_length <= G_DATA_MAX; // G_DATA_MAX need to be equal or bigger than i_length
         
         /*#(T_CLK * 20)
