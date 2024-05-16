@@ -52,13 +52,13 @@ module l4_if_source#(
         case(q_crnt_state)
             S0: begin
                 m_axis.tdata <= 72;
+                m_axis.tvalid  <= '1;
 
                 if (m_axis.tready && m_axis.tdata == 72) begin
                     m_axis.tdata <= buf_length;
-                    m_axis.tvalid  <= '1;
                 end
 
-                if (m_axis.tready && m_axis.tvalid) begin
+                if (m_axis.tready && m_axis.tvalid && m_axis.tdata <= buf_length) begin
                     q_crnt_state  <= S1;
                     m_axis.tvalid <= '0;
                     m_axis.tdata  <= q_data_cnt;
