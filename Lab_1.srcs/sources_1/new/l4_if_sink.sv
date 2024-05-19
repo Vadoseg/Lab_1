@@ -1,19 +1,4 @@
-
 `timescale 1ns / 1ps
-
-/*interface if_axis #(parameter int N = 1) ();
-	
-	localparam W = 8 * N; // tdata bit width (N - number of BYTES)
-	
-	logic         tready;
-	logic         tvalid;
-	logic         tlast ;
-	logic [W-1:0] tdata ;
-	
-	modport m (input tready, output tvalid, tlast, tdata);
-	modport s (output tready, input tvalid, tlast, tdata);
-	
-endinterface : if_axis*/
 
 module l4_if_sink#(
     
@@ -37,7 +22,6 @@ module l4_if_sink#(
     logic [4:0] Length = '0;  // CHANGE BUS
 
     logic m_crc_valid ;
-    //logic m_crc_ready;
     logic [G_BIT_WIDTH-1:0] m_crc_data ;
 
     localparam int C_IDLE_MAX  = 25;
@@ -56,12 +40,6 @@ module l4_if_sink#(
     } t_fsm_states;
 
     t_fsm_states q_crnt_state = S0;
-
-// Interface init
-
-    initial begin
-        s_axis.tready = '0;
-    end
 
     always_ff@(posedge i_clk) begin
         case(q_crnt_state)
