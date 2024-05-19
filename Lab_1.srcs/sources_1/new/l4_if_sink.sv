@@ -68,8 +68,8 @@ module l4_if_sink#(
             S0: begin
                 q_crnt_state <= S1;
                 q_data_cnt <= 1;
-                o_sink_good  <= '0;
-                o_sink_error <= '0;
+                o_sink_good <= '0;
+                o_sink_error <= 0;
             end
             S1: begin 
                 if(s_axis.tvalid) begin
@@ -143,9 +143,9 @@ module l4_if_sink#(
 		.i_crc_s_rst_p (q_crnt_state == S4 /*q_crnt_state == S5*/), // Sync Reset, Active High. Reset CRC To Initial Value.
 		.i_crc_ini_vld ('0     ), // Input Initial Valid
 		.i_crc_ini_dat ('0     ), // Input Initial Value
-		.i_crc_wrd_vld (s_axis.tvalid && (q_crnt_state != S0) && (q_crnt_state != S1) && (q_crnt_state != S5) && s_axis.tdata != 72), // Word Data Valid Flag 
+		.i_crc_wrd_vld (s_axis.tvalid && (q_crnt_state != S0) && (q_crnt_state != S5) && s_axis.tdata != 72), // Word Data Valid Flag 
 		.o_crc_wrd_rdy (s_axis.tready), // Ready To Recieve Word Data
-		.i_crc_wrd_dat (s_axis.tdata ), // Word Data
+		.i_crc_wrd_dat ( s_axis.tdata ), // Word Data
 		.o_crc_res_vld (m_crc_valid), // Output Flag of Validity, Active High for Each WORD_COUNT Number
 		.o_crc_res_dat (m_crc_data )  // Output CRC from Each Input Word
     );
