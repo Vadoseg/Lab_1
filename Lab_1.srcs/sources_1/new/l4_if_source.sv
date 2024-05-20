@@ -22,7 +22,8 @@ module l4_if_source#(
         S0 = 0,     // Length && Header
         S1 = 1,     // Payload
         S2 = 2,     // Pause
-        S3 = 3      // CRC_DATA
+        S3 = 3,     // CRC_DATA
+        S4 = 4
     } t_fsm_states;
     
     t_fsm_states q_crnt_state = S0;
@@ -39,6 +40,7 @@ module l4_if_source#(
     
 // Making counts for FSM  
     logic [G_CNT_WIDTH-1:0]  q_data_cnt = 1;
+    logic [G_CNT_WIDTH-1:0]  q_pause_cnt = 1;
 
 // For CRC 
     logic m_crc_valid;
@@ -86,11 +88,20 @@ module l4_if_source#(
                 m_axis.tvalid  <= '1;
                 m_axis.tlast   <= '1;
                 m_axis.tdata   <= m_crc_data;
+                
                 if (m_axis.tready && m_axis.tvalid) begin
-                    m_axis.tlast    <= '0;
-                    q_crnt_state    <= S0;
+                    
+                    q_crnt_state    <= S4;
                     m_axis.tvalid   <= '0;
                 end            
+            end
+            S4: begin
+                q_pause_cnt <= q_pause_cnt + 1;
+                if (q_pause_cnt == buf_length) begin
+                    m_axis.tlast    <= '0;
+                    q_pause_cnt = 1;
+                    q_crnt_state    <= S0;
+                end
             end
             
             default:
