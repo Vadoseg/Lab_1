@@ -44,8 +44,10 @@ module l4_if_top#(
     input i_clk,
     
 // Output from Sink    
-    output o_top_error,
-    output o_top_good
+    output bit o_err_crc,
+    output bit o_err_mis_tlast,
+    output bit o_err_unx_tlast,
+    output bit o_top_good
     );
     
     if_axis #(.N(G_BYT)) mstr_axis ();
@@ -102,7 +104,10 @@ module l4_if_top#(
         .i_clk         (i_clk      ),
         .s_axis        (slav_axis  ),
 
-        .o_sink_error  (o_top_error),
+        .o_err_crc          (o_err_crc      ),
+        .o_err_mis_tlast    (o_err_mis_tlast),
+        .o_err_unx_tlast    (o_err_unx_tlast),
+        
         .o_sink_good   (o_top_good )
     );
 endmodule

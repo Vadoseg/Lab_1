@@ -42,6 +42,14 @@ module l4_tb_if_top#(
     );
     
     always #(T_CLK * 20) i_clk = ~i_clk;
+    initial begin
+    // #(T_CLK * 400) i_rst[0] = ~i_rst[0];   
+    // #(T_CLK * 500) i_rst[0] = ~i_rst[0];   
+    // #(T_CLK * 500) i_rst = 3'b111;
+    // #(T_CLK * 20)  i_rst = 3'b000; 
+    // #(T_CLK * 1100) i_rst[2] = ~i_rst[2];   
+    // #(T_CLK * 500) i_rst[2] = ~i_rst[2];     
+    end
     
 
 

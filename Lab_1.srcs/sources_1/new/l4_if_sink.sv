@@ -13,10 +13,12 @@ module l4_if_sink#(
     if_axis.s s_axis,
 
     output bit o_sink_good,
-    output bit o_sink_error
+
+    output bit o_err_crc,
+    output bit o_err_mis_tlast,
+    output bit o_err_unx_tlast
     );
     
-    logic q_clear = '0; 
     logic [4:0] q_data_cnt = '0;  // CHANGE BUS
     logic [G_BIT_WIDTH-1:0] q_crc_tdata = '0;
     logic [4:0] Length = '0;  // CHANGE BUS
@@ -24,19 +26,16 @@ module l4_if_sink#(
     logic m_crc_valid ;
     logic [G_BIT_WIDTH-1:0] m_crc_data ;
 
-    localparam int C_IDLE_MAX  = 25;
-    localparam int C_IDLE_WIDTH  = ($ceil($clog2(C_IDLE_MAX+1)));
-
-    logic [C_IDLE_WIDTH-1:0]  q_idle_cnt  = '0;
     
+    bit q_expct_tlast = '0;
+
     typedef enum{
         S0 = 0,     // Ready/Init
         S1 = 1,     // Header
         S2 = 2,     // Length
         S3 = 3,     // Payload
         S4 = 4,     // CRC_PAUSE
-        S5 = 5,     // CRC_DATA
-        S6 = 6      // Idle
+        S5 = 5      // CRC_DATA
     } t_fsm_states;
 
     t_fsm_states q_crnt_state = S0;
@@ -47,7 +46,7 @@ module l4_if_sink#(
                 q_crnt_state <= S1;
                 q_data_cnt <= 1;
                 o_sink_good <= '0;
-                o_sink_error <= 0;
+                q_expct_tlast <= '0;
             end
             S1: begin 
                 if(s_axis.tvalid) begin
@@ -60,7 +59,6 @@ module l4_if_sink#(
                     Length <= s_axis.tdata;   // Length
                     q_crc_tdata <= s_axis.tdata;
                     q_crc_tdata <= q_data_cnt;  // Needed bcs Length was counting twice in the next state (Now q_crc_tdata <= 1)
-                    //q_data_cnt <= q_data_cnt + 1;
                     q_crnt_state <= S3;
                 end
             end
@@ -71,7 +69,7 @@ module l4_if_sink#(
                     
                     if (q_data_cnt == Length) begin
                         q_crnt_state <= S4;
-                        q_data_cnt <= 1;
+                        q_expct_tlast <= '1;
                         q_crc_tdata <= '0;  // Needed for correct visualisation and bcs we need to reset to zero
                     end
                 end
@@ -84,16 +82,8 @@ module l4_if_sink#(
                     if(s_axis.tlast && (m_crc_data == s_axis.tdata)) begin
                         o_sink_good <= '1;
                     end
-                    else if (s_axis.tlast && (m_crc_data != s_axis.tdata)) begin
-                        o_sink_error <= '1;
-                    end
-                    q_crnt_state <= S6;
+                    q_crnt_state <= S0;
                 end
-            end
-            S6: begin
-                o_sink_good <= '0;
-                o_sink_error <= '0;
-                q_crnt_state <= S0;
             end
             default:
                 q_crnt_state <= S0;
@@ -101,6 +91,13 @@ module l4_if_sink#(
         
         if (i_rst)
             q_crnt_state <= S0;
+
+        o_err_crc <= (q_crnt_state == S5 && s_axis.tlast && (m_crc_data != s_axis.tdata)) ? 1 : 0;
+
+        o_err_mis_tlast <= (q_crnt_state == S5 && q_expct_tlast && !s_axis.tlast && s_axis.tvalid) ? 1 : 0;
+
+        o_err_unx_tlast <=(q_data_cnt < Length && s_axis.tlast && q_crnt_state != S1) ? 1 : 0;
+
     end
     
     
@@ -118,7 +115,7 @@ module l4_if_sink#(
 		.NUM_STAGES (2   )  // Number of Register Stages, Equivalent Latency in Module. Minimum is 1, Maximum is 3.
     ) CRC (
         .i_crc_a_clk_p (i_clk  ), // Rising Edge Clock
-		.i_crc_s_rst_p (q_crnt_state == S4 /*q_crnt_state == S5*/), // Sync Reset, Active High. Reset CRC To Initial Value.
+		.i_crc_s_rst_p (q_crnt_state == S4 ), // Sync Reset, Active High. Reset CRC To Initial Value.
 		.i_crc_ini_vld ('0     ), // Input Initial Valid
 		.i_crc_ini_dat ('0     ), // Input Initial Value
 		.i_crc_wrd_vld (s_axis.tvalid && (q_crnt_state != S0) && (q_crnt_state != S5) && s_axis.tdata != 72), // Word Data Valid Flag 
