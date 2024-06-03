@@ -5,8 +5,7 @@ module l4_if_source#(
 // CRC Generics    
     parameter int G_BYT = 1,
     parameter int G_BIT_WIDTH = 8 * G_BYT,
-    parameter int G_DATA_MAX = 10,  // Size of data pack
-    parameter int G_CNT_WIDTH = ($ceil($clog2(G_DATA_MAX+1)))
+    parameter int G_CNT_WIDTH = 8
 )(
 
 //For Source
@@ -131,7 +130,7 @@ module l4_if_source#(
 		.NUM_STAGES (2   )              // Number of Register Stages, Equivalent Latency in Module. Minimum is 1, Maximum is 3.
     ) CRC (
         .i_crc_a_clk_p (i_clk  ),       // Rising Edge Clock
-		.i_crc_s_rst_p (m_axis.tready && m_axis.tvalid && q_crnt_state == S3),  // Sync Reset, Active High. Reset CRC To Initial Value.
+		.i_crc_s_rst_p (m_axis.tready && m_axis.tvalid && q_crnt_state == S3 || i_rst),  // Sync Reset, Active High. Reset CRC To Initial Value.
 		.i_crc_ini_vld ('0     ),       // Input Initial Valid
 		.i_crc_ini_dat ('0     ),       // Input Initial Value
 		.i_crc_wrd_vld ((m_axis.tready && m_axis.tvalid) && m_axis.tdata != 72),  // Word Data Valid Flag 

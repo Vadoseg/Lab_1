@@ -35,13 +35,12 @@ endinterface : if_axis
 
 module l4_if_top#(
     parameter int G_BYT = 1,
-    parameter int G_BIT_WIDTH = 8 * G_BYT,
-    parameter int G_DATA_MAX = 10, // Size of data pack
-    parameter int G_CNT_WIDTH = ($ceil($clog2(G_DATA_MAX+1))),
-    parameter logic [G_CNT_WIDTH-1:0] G_LENGTH = G_DATA_MAX // LENGTH of data pack
+    parameter int G_BIT_WIDTH = 8 * G_BYT
+    
 )(
     input [2:0] i_rst,
     input i_clk,
+    input [7:0] i_length,
     
 // Output from Sink    
     output bit o_err_crc,
@@ -63,7 +62,7 @@ module l4_if_top#(
         .i_clk      (i_clk    ),
         .m_axis     (mstr_axis),
         
-        .i_length   (G_LENGTH )  // Need to change size of data pack
+        .i_length   (i_length )  // Need to change size of data pack
     );
     
     (* keep_hierarchy="yes" *) 

@@ -115,7 +115,7 @@ module l4_if_sink#(
 		.NUM_STAGES (2   )  // Number of Register Stages, Equivalent Latency in Module. Minimum is 1, Maximum is 3.
     ) CRC (
         .i_crc_a_clk_p (i_clk  ), // Rising Edge Clock
-		.i_crc_s_rst_p (q_crnt_state == S4 ), // Sync Reset, Active High. Reset CRC To Initial Value.
+		.i_crc_s_rst_p (q_crnt_state == S4 || i_rst), // Sync Reset, Active High. Reset CRC To Initial Value.
 		.i_crc_ini_vld ('0     ), // Input Initial Valid
 		.i_crc_ini_dat ('0     ), // Input Initial Value
 		.i_crc_wrd_vld (s_axis.tvalid && (q_crnt_state != S0) && (q_crnt_state != S5) && s_axis.tdata != 72), // Word Data Valid Flag 
