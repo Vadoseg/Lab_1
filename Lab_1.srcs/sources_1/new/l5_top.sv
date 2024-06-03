@@ -23,9 +23,9 @@
 module l5_top#(
 
     )(
+        input bit i_clk,
         input bit [2:0] i_rst,
         input bit i_reg_rst,
-        input bit i_clk,
 
         if_axil.s s_axil
     );
@@ -38,16 +38,18 @@ module l5_top#(
 
     );*/
 
-    int length;
+    reg [7:0] length;
+
+    logic w_err_crc, w_err_mis_tlast, w_err_unx_tlast;
 
     (* keep_hierarchy="yes" *)  
     l4_if_top #(
-        .G_DATA_MAX (length)    // Maybe need to change from "parameter" to "input"
     
     ) l4_top (
         
         .i_clk              (i_clk),
         .i_rst              (i_rst),
+        .i_length           (length),
 
         .o_err_crc          (w_err_crc      ),
         .o_err_mis_tlast    (w_err_mis_tlast),
@@ -58,7 +60,7 @@ module l5_top#(
     (* keep_hierarchy="yes" *)   
     l5_reg_map #(
 
-    )(
+    ) reg_map (
         .i_clk              (i_clk    ),
         .i_rst              (i_reg_rst),
 
